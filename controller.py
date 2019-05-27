@@ -8,7 +8,7 @@ Usage: controller.py [-h] [-setup] [-n NETWORK] [-train] [-test] [-clear]
 Controller suite for Speaker clustering
 
 optional arguments:
-
+ These are the argumenets
 
   -h, --help  show this help message and exit
   -setup      Run project setup.

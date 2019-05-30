@@ -38,7 +38,7 @@ from networks.pairwise_lstm.lstm_controller import LSTMController
 
 class Controller(NetworkController):
     def __init__(self, setup=True, network='pairwise_lstm', train=False, test=False, clear=False, debug=False,
-                 plot=False, best=False, val_data=2):
+                 plot=False, best=False, val_data=40):
         super().__init__("Front")
         self.setup = setup
         self.network = network
@@ -159,7 +159,7 @@ if __name__ == '__main__':
                         help='Plots the last results of the specified networks in one file.')
     parser.add_argument('-best', dest='best', action='store_true',
                         help='If a single Network is specified and plot was called, just the best curves will be plotted')
-    parser.add_argument('-val#', dest='validation_number', default=5,
+    parser.add_argument('-val#', dest='validation_number', default=40,
                         help='Specify how many speakers should be used for testing (40, 60, 80).')
     args = parser.parse_args()
 

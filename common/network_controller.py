@@ -57,11 +57,11 @@ class NetworkController:
         checkpoint_names, set_of_embeddings, set_of_true_clusters, embeddings_numbers = self.get_embeddings()
         set_of_predicted_clusters = cluster_embeddings(set_of_embeddings)
 
-        #print("------------------>>>>>>>>>>> predicted results\n")
-        #print(set_of_predicted_clusters)
+        print("------------------>>>>>>>>>>> predicted results\n")
+        print(set_of_predicted_clusters)
 
-        #print("------------------>>>>>>>>>>> true clusters\n")
-        #print(set_of_true_clusters)
+        print("------------------>>>>>>>>>>> true clusters\n")
+        print(set_of_true_clusters)
 
         return checkpoint_names, set_of_predicted_clusters, set_of_true_clusters, embeddings_numbers
 

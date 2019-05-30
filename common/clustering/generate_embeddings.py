@@ -32,9 +32,9 @@ def generate_embeddings(train_output, test_output, train_speakers, test_speakers
     speakers.extend(speakers_train)
     speakers.extend(speakers_test)
 
-    #print(print("------------------>>>>>>>>>>> embeddings and speakers\n"))
-    #print(embeddings)
-    #print(speakers)
+    print(print("------------------>>>>>>>>>>> embeddings and speakers\n"))
+    print(embeddings)
+    print(speakers)
 
     return embeddings, speakers, number_embeddings
 

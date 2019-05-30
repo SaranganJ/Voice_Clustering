@@ -17,26 +17,26 @@ def cluster_embeddings(set_of_embeddings, metric='cosine', method='complete'):
     logger.info('Cluster embeddings')
 
     set_predicted_clusters = []
-    #print("------------------>>>>>>>>>>> det embeddings list\n")
-    #print(len(set_of_embeddings))
+    print("------------------>>>>>>>>>>> det embeddings list\n")
+    print(len(set_of_embeddings))
 
     for embeddings in set_of_embeddings:
         embeddings_distance = cdist(embeddings, embeddings, metric)
 
-        #print("------------------>>>>>>>>>>> distance matrix\n")
-        #print(embeddings_distance.shape)
+        print("------------------>>>>>>>>>>> distance matrix\n")
+        print(embeddings_distance.shape)
 
         embeddings_linkage = linkage(embeddings_distance, method, metric)
 
         save_create_dendrogram(embeddings_linkage)
 
-        #print("------------------>>>>>>>>>>> threshold list creation\n")
-        #print(embeddings_linkage.shape)
+        print("------------------>>>>>>>>>>> threshold list creation\n")
+        print(embeddings_linkage.shape)
 
         thresholds = embeddings_linkage[:, 2]
 
-        #print("------------------>>>>>>>>>>> threshold list\n")
-        #print(thresholds)
+        print("------------------>>>>>>>>>>> threshold list\n")
+        print(thresholds)
 
         predicted_clusters = []
 

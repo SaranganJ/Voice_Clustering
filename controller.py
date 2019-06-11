@@ -55,7 +55,8 @@ class Controller(NetworkController):
             5: "less_speaker_test_1_5",
             40: "speakers_40_clustering_vs_reynolds",
             60: "speakers_60_clustering",
-            80: "speakers_80_clustering"
+            80: "speakers_80_clustering",
+            630: "speakers_all.txt"
         }
 
         self.val_data = validation_data[val_data]
@@ -119,6 +120,7 @@ class Controller(NetworkController):
             return
 
         if is_suite_setup():
+            print(is_suite_setup())
             print("Already fully setup.")
         else:
             print("Setting up the network suite.")
@@ -159,7 +161,7 @@ if __name__ == '__main__':
                         help='Plots the last results of the specified networks in one file.')
     parser.add_argument('-best', dest='best', action='store_true',
                         help='If a single Network is specified and plot was called, just the best curves will be plotted')
-    parser.add_argument('-val#', dest='validation_number', default=40,
+    parser.add_argument('-val#', dest='validation_number', default=630,
                         help='Specify how many speakers should be used for testing (40, 60, 80).')
     args = parser.parse_args()
 

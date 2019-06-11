@@ -17,6 +17,7 @@ epsilon = 1e-16  # to avoid log(0) or division by 0
 
 def create_loss_functions_kl_div(input_var, network, target_var, margin):
     # define loss expression
+    print(network)
     prediction = lasagne.layers.get_output(network)
     loss = mean_loss_kl_div(prediction, target_var, margin)
 

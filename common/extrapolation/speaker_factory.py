@@ -15,7 +15,7 @@ def create_all_speakers():
     #yield Speaker(True, 5, 'less_speaker_test_1_5')
     #yield Speaker(False, 40, 'speakers_40_clustering_vs_reynolds')
     #yield Speaker(False, 100, 'speakers_100_50w_50m_not_reynolds')
-    yield Speaker(True, 40, 'speakers_40_clustering_vs_reynolds')
+    yield Speaker(True, 100 , 'speakers_all')
     #yield Speaker(True, 60, 'speakers_60_clustering')
     #yield Speaker(True, 80, 'speakers_80_clustering')
     #yield Speaker(True, 590, 'speakers_590_clustering_without_raynolds')

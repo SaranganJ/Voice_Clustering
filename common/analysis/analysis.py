@@ -4,7 +4,6 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from sklearn.metrics import *
 from theano.gradient import np
-
 from common.analysis.mr import misclassification_rate
 from common.utils.logger import *
 from common.utils.paths import *
@@ -18,9 +17,17 @@ def plot_files(plot_file_name, files):
     :param files: a set of full file paths that hold result data
     """
     logger = get_logger('analysis', logging.INFO)
-    #logger.info("filename : " + files)
     curve_names, set_of_mrs, set_of_homogeneity_scores, \
     set_of_completeness_scores, set_of_number_of_embeddings = read_result_pickle(files)
+
+
+
+    for i in range(len(set_of_mrs)):
+        print (len(set_of_mrs[i]))
+
+
+    print("Plot File Name")
+    print(plot_file_name)
 
     plot_curves(plot_file_name, curve_names, set_of_mrs, set_of_homogeneity_scores, set_of_completeness_scores,
                 set_of_number_of_embeddings)
@@ -47,7 +54,6 @@ def read_result_pickle(files):
     # Fill result sets
     for file in files:
         print("File name : " + file)
-        logger.info("Filename : " + file)
         curve_name, mrs, homogeneity_scores, completeness_scores, number_of_embeddings = load(file)
 
         for index, curve_name in enumerate(curve_name):
@@ -55,7 +61,7 @@ def read_result_pickle(files):
             set_of_homogeneity_scores.append(homogeneity_scores[index])
             set_of_completeness_scores.append(completeness_scores[index])
             set_of_number_of_embeddings.append(number_of_embeddings[index])
-            curve_names.append(curve_name)
+            curve_names.append(curve_name+"_"+file[89:])
 
     return curve_names, set_of_mrs, set_of_homogeneity_scores, set_of_completeness_scores, set_of_number_of_embeddings
 
@@ -75,14 +81,26 @@ def plot_curves(plot_file_name, curve_names, mrs, homogeneity_scores, completene
     logger.info(plot_file_name)
     min_mrs = []
     for mr in mrs:
+        print("............Appending........ ")
+        print(np.min(mr))
         min_mrs.append(np.min(mr))
+        print("\n")
 
-    min_mrs, curve_names, mrs, homogeneity_scores, completeness_scores, number_of_embeddings = \
-        (list(t) for t in
-         zip(*sorted(zip(min_mrs, curve_names, mrs, homogeneity_scores, completeness_scores, number_of_embeddings))))
+    # x = zip(*sorted(zip(min_mrs, curve_names, mrs, homogeneity_scores, completeness_scores, number_of_embeddings)))
+    #
+    #
+    # print("\n")
+    # print(tuple(x))
+    # print("\n")
+    #
+    # min_mrs, curve_names, mrs, homogeneity_scores, completeness_scores, number_of_embeddings = \
+    #     (list(t) for t in x)
+
 
     # How many lines to plot
     number_of_lines = len(curve_names)
+    print("Number of Lines to plot " + str(number_of_lines))
+    print(curve_names)
 
     # Get various colors needed to plot
     color_map = plt.get_cmap('gist_rainbow')
@@ -95,8 +113,9 @@ def plot_curves(plot_file_name, curve_names, mrs, homogeneity_scores, completene
     # Define Plots
     mr_plot = plt.subplot2grid((2, 3), (0, 0), colspan=2)
     mr_plot.set_ylabel('MR')
-    mr_plot.set_xlabel('number of clusters')
-    plt.ylim([-0.02, 1.02])
+    mr_plot.set_xlabel('Number of clusters')
+    plt.grid(True)
+    plt.ylim([-0.01, 1.1])
 
     completeness_scores_plot = add_cluster_subplot(fig1, 234, 'completeness_scores')
     homogeneity_scores_plot = add_cluster_subplot(fig1, 235, 'homogeneity_scores')
@@ -111,6 +130,8 @@ def plot_curves(plot_file_name, curve_names, mrs, homogeneity_scores, completene
         label = curve_names[index] + '\n min MR: ' + str(min_mrs[index])
         color = colors[index]
         number_of_clusters = np.arange(number_of_embeddings[index], 0, -1)
+        print("Clusters....")
+        print(number_of_clusters)
 
         for plot, value in curves:
             plot.plot(number_of_clusters, value[index], color=color, label=label)
@@ -119,6 +140,7 @@ def plot_curves(plot_file_name, curve_names, mrs, homogeneity_scores, completene
     fig1.legend()
     # fig1.show()
     fig1.savefig(get_result_png(plot_file_name))
+    print("Plot File saved in " + get_result_png(plot_file_name) )
     fig1.savefig(get_result_png(plot_file_name + '.svg'), format='svg')
 
 
@@ -137,7 +159,8 @@ def add_cluster_subplot(fig, position, y_lable):
     return subplot
 
 
-def analyse_results(network_name, checkpoint_names, set_of_predicted_clusters, set_of_true_clusters, embedding_numbers):
+def analyse_results(network_name, checkpoint_names, set_of_predicted_clusters, set_of_true_clusters, embedding_numbers,algorithm,
+                    cluster_count=None, mr_list=None ):
     """
     Analyses each checkpoint with the values of set_of_predicted_clusters and set_of_true_clusters.
     After the analysis the result are stored in the Pickle network_name.pickle and the best Result
@@ -155,23 +178,31 @@ def analyse_results(network_name, checkpoint_names, set_of_predicted_clusters, s
     set_of_homogeneity_scores = []
     set_of_completeness_scores = []
 
+    print ("Analyzing Results for " + algorithm)
+
+    print("Checkpoint Names")
+    print(checkpoint_names)
+
     for index, predicted_clusters in enumerate(set_of_predicted_clusters):
-        logger.info('Analysing checkpoint:' + checkpoint_names[index])
+        print(index)
+        if checkpoint_names is not None:
+            logger.info('Analysing checkpoint:' + checkpoint_names[index-1])
 
         mrs, homogeneity_scores, completeness_scores = calculate_analysis_values(predicted_clusters,
-                                                                                 set_of_true_clusters[index])
+                                                                                 set_of_true_clusters[index-1],
+                                                                                 cluster_count, mr_list)
         set_of_mrs.append(mrs)
         set_of_homogeneity_scores.append(homogeneity_scores)
         set_of_completeness_scores.append(completeness_scores)
 
     write_result_pickle(network_name, checkpoint_names, set_of_mrs, set_of_homogeneity_scores,
-                        set_of_completeness_scores, embedding_numbers)
+                        set_of_completeness_scores, embedding_numbers, algorithm)
     save_best_results(network_name, checkpoint_names, set_of_mrs, set_of_homogeneity_scores,
-                      set_of_completeness_scores, embedding_numbers)
+                      set_of_completeness_scores, embedding_numbers,algorithm)
     logger.info('Analysis done')
 
 
-def calculate_analysis_values(predicted_clusters, true_cluster):
+def calculate_analysis_values(predicted_clusters, true_cluster, cluster_count=None, mr_list=None):
     """
     Calculates the analysis values out of the predicted_clusters.
 
@@ -181,15 +212,14 @@ def calculate_analysis_values(predicted_clusters, true_cluster):
     """
     logger = get_logger('analysis', logging.INFO)
     logger.info('Calculate scores')
-
-    print("------------------>>>>>>>>>>>  before incremental true clusters\n")
-    print(true_cluster)
-    for i in range(len(true_cluster)):
-        true_cluster[i] += 1
-
-    print("------------------>>>>>>>>>>>  after incremental true clusters\n")
-    print(true_cluster)
-
+    #
+    # print("------------------>>>>>>>>>>>  before incremental true clusters\n")
+    # print(true_cluster)
+    # for i in range(len(true_cluster)):
+    #     true_cluster[i] += 1
+    #
+    # print("------------------>>>>>>>>>>>  after incremental true clusters\n")
+    # print(true_cluster)
 
     # Initialize output
     mrs = np.ones(len(true_cluster))
@@ -203,19 +233,17 @@ def calculate_analysis_values(predicted_clusters, true_cluster):
         homogeneity_scores[i] = homogeneity_score(true_cluster, predicted_cluster)
         completeness_scores[i] = completeness_score(true_cluster, predicted_cluster)
 
-        if (max(predicted_cluster) == 5):
-            print("------------------>>>>>>>>>>>  Accurate MR\n")
-            print(mrs[i])
-
+        if cluster_count is not None and (max(predicted_cluster) == cluster_count):
+            mr_list[str(cluster_count)] = mrs[i]
 
     return mrs, homogeneity_scores, completeness_scores
 
 
 def save_best_results(network_name, checkpoint_names, set_of_mrs, set_of_homogeneity_scores,
-                      set_of_completeness_scores, speaker_numbers):
+                      set_of_completeness_scores, speaker_numbers,algorithm):
     if len(set_of_mrs) == 1:
         write_result_pickle(network_name + "_best", checkpoint_names, set_of_mrs,
-                            set_of_homogeneity_scores, set_of_completeness_scores, speaker_numbers)
+                            set_of_homogeneity_scores, set_of_completeness_scores, speaker_numbers,algorithm)
     else:
 
         # Find best result (min MR)
@@ -232,6 +260,7 @@ def save_best_results(network_name, checkpoint_names, set_of_mrs, set_of_homogen
         best_speaker_numbers = []
         for index, min_mr in enumerate(min_mrs):
             if min_mr == min_mr_over_all:
+                index = index - 1
                 best_checkpoint_name.append(checkpoint_names[index])
                 set_of_best_mrs.append(set_of_mrs[index])
                 set_of_best_homogeneity_scores.append(set_of_homogeneity_scores[index])
@@ -243,11 +272,12 @@ def save_best_results(network_name, checkpoint_names, set_of_mrs, set_of_homogen
 
 
 def write_result_pickle(network_name, checkpoint_names, set_of_mrs, set_of_homogeneity_scores,
-                        set_of_completeness_scores, number_of_embeddings):
+                        set_of_completeness_scores, number_of_embeddings ,algorithm):
     logger = get_logger('analysis', logging.INFO)
-    logger.info('Write result pickle')
+
     save((checkpoint_names, set_of_mrs, set_of_homogeneity_scores, set_of_completeness_scores,
-          number_of_embeddings), get_result_pickle(network_name))
+          number_of_embeddings), (get_result_pickle(network_name+"_"+algorithm)))
+    logger.info('Write result pickle to ' + str((get_result_pickle(network_name+"_"+algorithm))))
 
 
 def read_and_safe_best_results():

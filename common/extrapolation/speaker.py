@@ -120,6 +120,9 @@ class Speaker:
         :return: true if it exists, false otherwise
         """
         if self.split_train_test:
+            print(get_speaker_pickle(self.output_name + '_train'))
             return path.exists(get_speaker_pickle(self.output_name + '_train'))
+
         else:
+            print(get_speaker_pickle(self.output_name + '_train'))
             path.exists(get_speaker_pickle(self.output_name + '_cluster'))

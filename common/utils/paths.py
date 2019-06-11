@@ -54,6 +54,10 @@ def get_experiment_plots(*args):
     return join(get_experiments('plots'), *args)
 
 
+def get_experiment_results(*args):
+    return join(get_experiments('results'), *args)
+
+
 def get_speaker_list(speaker):
     """
     Gets the absolute path to the speaker list of that name.
@@ -106,10 +110,7 @@ def list_all_files(directory, file_regex):
     :return: the absolute path of al the files that match the file_regex an ar in the top level of the directory
     """
     files = []
-    print ("directory name : " + directory)
     for file in os.listdir(directory):
-        print("before : getting in")
         if fnmatch.fnmatch(file, file_regex):
-            print ("Inside : " + file_regex)
             files.append(file)
     return files

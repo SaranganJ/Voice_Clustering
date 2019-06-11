@@ -25,22 +25,26 @@ class LSTMController(NetworkController):
         bilstm_2layer_dropout(self.network_file, 'speakers_40_clustering_vs_reynolds_train' ,
                               n_hidden1=256, n_hidden2=256, n_classes=100, segment_size=50)
 
-    def get_embeddings(self):
+    def get_embeddings(self, cluster_count):
         logger = get_logger('lstm', logging.INFO)
-        logger.info('Run pairwise_lstm test')
+        logger.info('Run pairwise_lstm test\n')
+
+
+        print("Cluster Count : " + str(cluster_count))
 
         # Load and prepare train/test data
-        #print ("old path =============> " + self.get_validation_test_data())
         #print("old path =============> " + self.get_validation_train_data())
-        x_test, speakers_test = load_and_prepare_data(self.get_validation_test_data())
-        x_train, speakers_train = load_and_prepare_data(self.get_validation_train_data())
+        x_test, speakers_test = load_and_prepare_data(self.get_validation_test_data(), cluster_count=cluster_count * 2)
+
+        # print("old path =============> " + self.get_validation_train_data())
+        x_train, speakers_train = load_and_prepare_data(self.get_validation_train_data(), cluster_count=cluster_count * 8)
 
         # Prepare return values
         set_of_embeddings = []
         set_of_speakers = []
         speaker_numbers = []
         checkpoints = list_all_files(get_experiment_nets(), "*pairwise_lstm*.h5")
-        checkpoints = checkpoints[:1]
+        checkpoints = ["pairwise_lstm_100_00999.h5"]
 
         # Values out of the loop
         metrics = ['accuracy', 'categorical_accuracy', ]
@@ -76,33 +80,39 @@ class LSTMController(NetworkController):
             embeddings, speakers, num_embeddings = generate_embeddings(train_output, test_output, speakers_train,
                                                                        speakers_test, vector_size)
 
-            print("------------------>>>>>>>>>>> sub embeddings size\n")
-            print(len(embeddings))
 
 
             # Fill the embeddings and speakers into the arrays
             set_of_embeddings.append(embeddings)
-
-            print("------------------>>>>>>>>>>> All embeddings size\n")
-            print(len(set_of_embeddings))
             set_of_speakers.append(speakers)
             speaker_numbers.append(num_embeddings)
 
             #return 1
 
         logger.info('Pairwise_lstm test done.')
-        #print (set_of_embeddings)
         return checkpoints, set_of_embeddings, set_of_speakers, speaker_numbers
 
 
-def load_and_prepare_data(data_path, segment_size=50):
+def load_and_prepare_data(data_path, segment_size=50, cluster_count=None):
     # Load and generate test data
-    #print ("path ===========> " + data_path)
     x, y, s_list = load(data_path)
+    print("stored all speaker utter count ------------------------>>>>>>>>>>>>>>>>>>>>>>")
+    print(len(x))
+    print("stored all speaker index count ------------------------>>>>>>>>>>>>>>>>>>>>>>")
+    print(len(y))
+
+    if cluster_count is not None:
+        x = x[0:cluster_count]
+        y = y[0:cluster_count]
+        s_list = s_list[0:cluster_count]
+
+ #   print(" =============> ", str(len(x)))
+  #  print(" =============> ", len(y))
+    #print(" =============> ", s_list)
     x, speakers = generate_test_data(x, y, segment_size)
 
-    print("------------------>>>>>>>>>>> final shape before reshape\n")
-    print(x.shape)
+   # print("------------------>>>>>>>>>>> final shape before reshape\n")
+   # print(x.shape)
 
     # Reshape test data because it is an lstm
     return x.reshape(x.shape[0], x.shape[3], x.shape[2]), speakers

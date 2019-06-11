@@ -20,7 +20,7 @@ class LuvoController(NetworkController):
 
     def get_embeddings(self):
         train_data = self.get_validation_train_data()
-        test_data = self.get_validation_test_data()
+        test_data = saself.get_validation_test_data()
 
         embeddings, speakers, num_embeddings = self.cnn.create_embeddings(train_data, test_data)
 

@@ -13,8 +13,10 @@ def generate_embeddings(train_output, test_output, train_speakers, test_speakers
     :param vector_size: The size which the output will have
     :return: embeddings, the speakers and the number of embeddings
     """
+
+    print("\n")
     logger = get_logger('clustering', logging.INFO)
-    logger.info('Generate embeddings')
+    logger.info('Generate embeddings(Inside generate_embeddings Class)')
     num_speakers = len(set(test_speakers))
 
     # Prepare return variable
@@ -23,8 +25,8 @@ def generate_embeddings(train_output, test_output, train_speakers, test_speakers
     speakers = []
 
     # Create utterances
-    embeddings_train, speakers_train = create_utterances(num_speakers, vector_size, train_output, train_speakers)
-    embeddings_test, speakers_test = create_utterances(num_speakers, vector_size, test_output, test_speakers)
+    embeddings_train, speakers_train = create_utterances(num_speakers, vector_size, train_output, train_speakers, " train")
+    embeddings_test, speakers_test = create_utterances(num_speakers, vector_size, test_output, test_speakers, " test")
 
     # Merge utterances
     embeddings.extend(embeddings_train)
@@ -32,26 +34,29 @@ def generate_embeddings(train_output, test_output, train_speakers, test_speakers
     speakers.extend(speakers_train)
     speakers.extend(speakers_test)
 
-    print(print("------------------>>>>>>>>>>> embeddings and speakers\n"))
-    print(embeddings)
-    print(speakers)
+
+
+    print("Length of Test and Train Speakers : " + str(len(speakers)))
+    print("Length of Test and Train Embeddings : " + str(len(embeddings)))
+    print("Number of Embeddings : " + str(number_embeddings))
 
     return embeddings, speakers, number_embeddings
 
 
 #num_speakers, vector_size, train_output, train_speakers
-def create_utterances(num_speakers, vector_size, vectors, y):
+def create_utterances(num_speakers, vector_size, vectors, y,type):
     """
     Creates one utterance for each speaker in the vectors.
     :param num_speakers: Number of distinct speakers in this vector
     :param vector_size: Number of data in utterance
     :param vectors: The unordered speaker data
     :param y: An array that tells which speaker (number) is in which place of the vectors array
+    :param type : train/test
     :return: the embeddings per speaker and the speakers (numbers)
     """
 
     # Prepare return variables
-    embeddings = np.zeros((num_speakers, vector_size))
+    embeddings = np.zeros((num_speakers, vector_size))       #VectorSize = 512
     speakers = set(y)
 
     # Fill embeddings with utterances
@@ -60,13 +65,18 @@ def create_utterances(num_speakers, vector_size, vectors, y):
         # Fetch correct utterance
         utterance = embeddings[i]
 
+
         # Fetch values where same speaker and add to utterance
         indices = np.where(y == i)[0]
+
         outputs = np.take(vectors, indices, axis=0)
+
         for value in outputs:
             utterance = np.add(utterance, value)
 
         # Add filled utterance to embeddings
         embeddings[i] = np.divide(utterance, len(outputs))
+    print(str(num_speakers) + type + " embeddings of " + str(embeddings[0].shape) + " generated")
+
 
     return embeddings, speakers

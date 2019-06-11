@@ -14,12 +14,14 @@ from .new_mr_calculation import generate_X
 
 
 def misclassification_rate(N, e):
+
     MR = float(e) / N
-    # print float(e)
+    print("Miss Classification Rate : " + MR)
     return MR
 
 
 def extract_vectors(num_speakers, vec_size, vectors, y):
+
     X = np.zeros((num_speakers, vec_size))
     for i in range(num_speakers):
         indices = np.where(y == i)[0]
@@ -112,6 +114,8 @@ def load_data(train_file, test_file):
         train_output, train_speakers, train_speaker_names = pickle.load(f)
     with open(get_speaker_pickle(test_file), 'rb') as f:
         test_output, test_speakers, test_speaker_names = pickle.load(f)
+
+    print ("Data loaded")
     return train_output, test_output, train_speakers, test_speakers
 
 

@@ -22,7 +22,8 @@ def is_suite_setup():
     :return: true if the suite is setup, false otherwise
     """
     for speaker in create_all_speakers():
+        print(speaker)
         if not speaker.is_pickle_saved():
             return False
-
+    print("\n")
     return True

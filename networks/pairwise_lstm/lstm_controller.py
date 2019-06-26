@@ -20,12 +20,30 @@ class LSTMController(NetworkController):
     def __init__(self):
         super().__init__("pairwise_lstm")
         self.network_file = self.name + "_100"
+        self.model_dict = dict()
+        # checkpoints = list_all_files(get_experiment_nets(), "*pairwise_lstm*.h5")
+        self.checkpoints = ['pairwise_lstm_100_00099.h5']
+        loss = pairwise_kl_divergence
+        custom_objects = {'pairwise_kl_divergence': pairwise_kl_divergence}
+        metrics = ['accuracy', 'categorical_accuracy', ]
+        # loss = pairwise_kl_divergence
+        # custom_objects = {'pairwise_kl_divergence': pairwise_kl_divergence}
+        optimizer = 'rmsprop'
+        for checkpoint in self.checkpoints:
+            network_file = get_experiment_nets(checkpoint)
+            model_full = load_model(network_file, custom_objects=custom_objects)
+            model_full.compile(loss=loss, optimizer=optimizer, metrics=metrics)
+
+            # Get a Model with the embedding layer as output and predict
+            model_partial = Model(inputs=model_full.input, outputs=model_full.layers[2].output)
+            self.model_dict[checkpoint] = model_partial
+
 
     def train_network(self):
         bilstm_2layer_dropout(self.network_file, 'speakers_40_clustering_vs_reynolds_train' ,
                               n_hidden1=256, n_hidden2=256, n_classes=100, segment_size=50)
 
-    def get_embeddings(self, cluster_count):
+    def get_embeddings(self, cluster_count,vector_size,j):
         logger = get_logger('lstm', logging.INFO)
         logger.info('Run pairwise_lstm test\n')
 
@@ -43,26 +61,27 @@ class LSTMController(NetworkController):
         set_of_embeddings = []
         set_of_speakers = []
         speaker_numbers = []
-        checkpoints = list_all_files(get_experiment_nets(), "*pairwise_lstm*.h5")
-        checkpoints = ["pairwise_lstm_100_00999.h5"]
+        # checkpoints = list_all_files(get_experiment_nets(), "*pairwise_lstm*.h5")
+        # checkpoints = ["pairwise_lstm_100_00999.h5"]
 
         # Values out of the loop
-        metrics = ['accuracy', 'categorical_accuracy', ]
-        loss = pairwise_kl_divergence
-        custom_objects = {'pairwise_kl_divergence': pairwise_kl_divergence}
-        optimizer = 'rmsprop'
-        vector_size = 256 * 2
+        # metrics = ['accuracy', 'categorical_accuracy', ]
+        # loss = pairwise_kl_divergence
+        # custom_objects = {'pairwise_kl_divergence': pairwise_kl_divergence}
+        # optimizer = 'rmsprop'
+
 
         # Fill return values
-        for checkpoint in checkpoints:
+        for checkpoint in self.checkpoints:
             logger.info('Running checkpoint: ' + checkpoint)
             # Load and compile the trained network
-            network_file = get_experiment_nets(checkpoint)
-            model_full = load_model(network_file, custom_objects=custom_objects)
-            model_full.compile(loss=loss, optimizer=optimizer, metrics=metrics)
+            # network_file = get_experiment_nets(checkpoint)
+            # model_full = load_model(network_file, custom_objects=custom_objects)
+            # model_full.compile(loss=loss, optimizer=optimizer, metrics=metrics)
 
             # Get a Model with the embedding layer as output and predict
-            model_partial = Model(inputs=model_full.input, outputs=model_full.layers[2].output)
+            # model_partial = Model(inputs=model_full.input, outputs=model_full.layers[2].output)
+            model_partial = self.model_dict[checkpoint]
             test_output = np.asarray(model_partial.predict(x_test))
             # print("------------------>>>>>>>>>>> test data size\n")
             # print(x_test.shape)
@@ -76,10 +95,12 @@ class LSTMController(NetworkController):
             #
             # print("------------------>>>>>>>>>>> prediction out\n")
             # print(train_output.shape)
-
             embeddings, speakers, num_embeddings = generate_embeddings(train_output, test_output, speakers_train,
-                                                                       speakers_test, vector_size)
+                                                                       speakers_test, vector_size,j)
 
+            print("Length of Speakers")
+            print(len(speakers))
+            print("\n")
 
 
             # Fill the embeddings and speakers into the arrays
@@ -90,7 +111,7 @@ class LSTMController(NetworkController):
             #return 1
 
         logger.info('Pairwise_lstm test done.')
-        return checkpoints, set_of_embeddings, set_of_speakers, speaker_numbers
+        return self.checkpoints, set_of_embeddings, set_of_speakers, speaker_numbers
 
 
 def load_and_prepare_data(data_path, segment_size=50, cluster_count=None):

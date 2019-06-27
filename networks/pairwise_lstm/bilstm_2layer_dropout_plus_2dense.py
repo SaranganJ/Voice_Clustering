@@ -33,7 +33,7 @@ from common.utils.paths import *
 
 
 class bilstm_2layer_dropout(object):
-    def __init__(self, name, training_data, n_hidden1=128, n_hidden2=128, n_classes=630, n_10_batches=1000,
+    def __init__(self, name, training_data, n_hidden1=128, n_hidden2=128, n_classes=630, n_10_batches=10,
                  segment_size=15, frequency=128):
         self.network_name = name
         self.training_data = training_data
@@ -42,7 +42,7 @@ class bilstm_2layer_dropout(object):
         self.n_hidden2 = n_hidden2
         self.n_classes = n_classes
         self.n_10_batches = n_10_batches
-        self.segment_size = segment_size
+        self.segment_size = segment_size    #The audio segment length
         self.input = (segment_size, frequency)
         print(self.network_name)
         self.run_network()
@@ -66,7 +66,7 @@ class bilstm_2layer_dropout(object):
 
     def create_train_data(self):
         with open(get_speaker_pickle(self.training_data), 'rb') as f:
-            (X, y, speaker_names) = pickle.load(f)
+            (X, y, speaker_names, sr) = pickle.load(f)
 
         splitter = sts.SpeakerTrainSplit(0.2, 10)
         X_t, X_v, y_t, y_v = splitter(X, y)
@@ -98,6 +98,7 @@ class bilstm_2layer_dropout(object):
                                       nb_worker=1, pickle_safe=False)
         ps.save_accuracy_plot(history, self.network_name)
         ps.save_loss_plot(history, self.network_name)
+        model.summary()
         print("saving model")
         model.save(get_experiment_nets(self.network_name + ".h5"))
         # print "evaluating model"

@@ -13,7 +13,7 @@ def setup_suite():
     """
     for speaker in create_all_speakers():
         if not speaker.is_pickle_saved():
-            threading.Thread(target=speaker.safe_to_pickle).start()
+            speaker.safe_to_pickle()
 
 
 def is_suite_setup():

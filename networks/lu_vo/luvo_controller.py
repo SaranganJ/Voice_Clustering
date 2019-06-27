@@ -16,7 +16,7 @@ class LuvoController(NetworkController):
         self.cnn = SpectrogramCnn590(get_experiment_nets(self.checkpoint))
 
     def train_network(self):
-        self.cnn.create_and_train(get_speaker_pickle("speakers_590_clustering_without_raynolds_train"))
+        self.cnn.create_and_train(get_speaker_pickle("speakers_all_train"))
 
     def get_embeddings(self):
         train_data = self.get_validation_train_data()

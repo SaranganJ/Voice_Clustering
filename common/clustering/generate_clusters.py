@@ -11,7 +11,7 @@ import common.clustering.extractor
 import numpy as np
 
 
-def cluster_embeddings(set_of_embeddings, set_of_true_clusters, algorithm, metric='cosine', method='complete', ):
+def cluster_embeddings(set_of_embeddings, set_of_true_clusters, algorithm, cluster_count, mr_list3, mr_list4, vector_size,j, metric='cosine', method='complete'):
     """
     Calculates the distance and the linkage matrix for these embeddings.
 
@@ -25,6 +25,8 @@ def cluster_embeddings(set_of_embeddings, set_of_true_clusters, algorithm, metri
     print("\n")
     logger.info('Cluster embeddings(Inside Generate Cluster Class)')
     print("\n")
+
+    print(cluster_count)
 
     # print("------------------>>>>>>>>>>> det embeddings list\n")
 
@@ -60,9 +62,6 @@ def cluster_embeddings(set_of_embeddings, set_of_true_clusters, algorithm, metri
 
             thresholds = embeddings_linkage[:, 2]
 
-            print("------------------>>>>>>>>>>> Threshold list\n")
-            print(thresholds)
-
             predicted_clusters = []
 
             for threshold in thresholds:
@@ -71,9 +70,9 @@ def cluster_embeddings(set_of_embeddings, set_of_true_clusters, algorithm, metri
                 # print(str(predicted_cluster)+ " predicted")
                 predicted_clusters.append(predicted_cluster)
 
-                if (max(predicted_cluster) == 5):
-                    print("------------------>>>>>>>>>>> predicted cluster when k=5\n")
-                    print(predicted_cluster)
+                # if (max(predicted_cluster) == 5):
+                #     print("------------------>>>>>>>>>>> predicted cluster when k=5\n")
+                #     print(predicted_cluster)
 
             set_predicted_clusters.append(predicted_clusters)
 
@@ -86,6 +85,8 @@ def cluster_embeddings(set_of_embeddings, set_of_true_clusters, algorithm, metri
             a = np.asarray(set_of_true_clusters[0])
             print(a)
             print("\n")
+            # predicted_clusters.append(a)
+            # set_predicted_clusters.append(predicted_clusters)
 
             dos = ds.DominantSetClustering(feature_vectors=embeddings, speaker_ids=a,
                                            metric='cosine', dominant_search=False,
@@ -97,6 +98,14 @@ def cluster_embeddings(set_of_embeddings, set_of_true_clusters, algorithm, metri
             print("MR\t\tARI\t\tACP")
             print("{0:.4f}\t\t{1:.4f}\t\t{2:.4f}".format(mr, ari, acp))  # MR - ARI - ACP
 
+            mr_list3[str(cluster_count)] = mr
+            print(str(mr) + " saved to Dictionary3")
+
+            temp = str(cluster_count) + "_" + str(vector_size) + "_" + str(j)
+
+            mr_list4[temp] = mr
+            print(str(mr) + " saved to Dictionary4")
+
         elif algorithm == "K_Means_Clustering":
 
             set_predicted_clusters = []
@@ -104,7 +113,10 @@ def cluster_embeddings(set_of_embeddings, set_of_true_clusters, algorithm, metri
             predicted_clusters = []
 
             for i in range(1):
-                k = 20
+                k = cluster_count
+                print("Passing CLuster Count as k")
+                print(k)
+                print("\n")
                 kmeans_model = KMeans(n_clusters=k).fit(embeddings)
 
                 # Predicting the clusters

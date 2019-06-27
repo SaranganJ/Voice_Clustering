@@ -18,7 +18,7 @@ class KLDivController(NetworkController):
 
     def train_network(self):
         net_file = get_experiment_nets(self.checkpoints[0])
-        train_file = get_speaker_pickle("speakers_100_50w_50m_not_reynolds_cluster")
+        train_file = get_speaker_pickle("speakers_all_train")
 
         create_and_train(network_params_file_in=None,
                          network_params_file_out=net_file,
@@ -26,7 +26,7 @@ class KLDivController(NetworkController):
                          epoch_batches=30,
                          network_fun=create_network_100_speakers, with_validation=False)
 
-    def get_embeddings(self):
+    def get_embeddings(self,  cluster_count):
         logger = get_logger('kldiv', logging.INFO)
         logger.info('Run pairwise_kldiv')
         checkpoints = self.checkpoints

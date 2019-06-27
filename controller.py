@@ -25,6 +25,8 @@ import sys
 
 import matplotlib
 
+
+
 matplotlib.use('Agg')
 from common.analysis.analysis import *
 from common.extrapolation.setup import setup_suite, is_suite_setup
@@ -34,6 +36,7 @@ from networks.flow_me.me_controller import MEController
 from networks.lu_vo.luvo_controller import LuvoController
 from networks.pairwise_kldiv.kldiv_controller import KLDivController
 from networks.pairwise_lstm.lstm_controller import LSTMController
+from plot import plot_files2
 
 
 class Controller(NetworkController):
@@ -130,8 +133,8 @@ class Controller(NetworkController):
     def plot_results(self):
         if not self.plot:
             return
-
-        plot_files(self.network, self.get_result_files())
+        print("ejfbdfj")
+        plot_files2(self.network, self.get_result_files())
 
     def get_result_files(self):
         if self.network == "all":

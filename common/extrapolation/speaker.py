@@ -66,9 +66,11 @@ class Speaker:
             X_train_valid, X_test, y_train_valid, y_test = speaker_train_split(X, y, None)
 
             with open(get_speaker_pickle(self.output_name + '_train'), 'wb') as f:
+                print(get_speaker_pickle(self.output_name + '_train')+ " saved")
                 pickle.dump((X_train_valid, y_train_valid, speaker_names), f, -1)
 
             with open(get_speaker_pickle(self.output_name + '_test'), 'wb') as f:
+                print(get_speaker_pickle(self.output_name + '_test') + " Saved.")
                 pickle.dump((X_test, y_test, speaker_names), f, -1)
         else:
             with open(get_speaker_pickle(self.output_name + '_cluster'), 'wb') as f:
@@ -124,5 +126,5 @@ class Speaker:
             return path.exists(get_speaker_pickle(self.output_name + '_train'))
 
         else:
-            print(get_speaker_pickle(self.output_name + '_train'))
+            print(get_speaker_pickle(self.output_name + '_cluster'))
             path.exists(get_speaker_pickle(self.output_name + '_cluster'))

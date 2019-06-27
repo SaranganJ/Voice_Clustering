@@ -157,6 +157,8 @@ class DominantSetClustering:
         # assignment of clusters label
         if self.dominant_search:
             v = evaluation.get_most_partecipating(labels=self.ds_result, ground_truth=self.speaker_ids, x=self.ds_vals)
+
+            print(v)
         else:
             v = evaluation.get_hungarian(labels=self.ds_result, ground_truth=self.speaker_ids)
         mr = evaluation.get_mr(labels=v, ground_truth=self.speaker_ids)

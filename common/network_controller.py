@@ -37,7 +37,7 @@ class NetworkController:
         pass
 
     @abc.abstractmethod
-    def get_embeddings(self, cluster_count):
+    def get_embeddings(self, cluster_count,vector_size,j):
         """
         Processes the validation list and get's the embeddings as the network output.
         All return values are sets of possible multiples.
@@ -45,7 +45,7 @@ class NetworkController:
         """
         return None, None, None, None
 
-    def get_clusters(self, cluster_count, algorithm):
+    def get_clusters(self, cluster_count, vector_size, algorithm, mr_list3 ,mr_list4 ,j):
         """
         Generates the predicted_clusters with the results of get_embeddings.
         All return values are sets of possible multiples.
@@ -55,40 +55,40 @@ class NetworkController:
         set_of_true_clusters: A 2d array of the validation clusters. [checkpoint, validation-clusters]
         embeddings_numbers: A list which represent the number of embeddings in each checkpoint.
         """
-        checkpoint_names, set_of_embeddings, set_of_true_clusters, embeddings_numbers = self.get_embeddings(cluster_count)
+        checkpoint_names, set_of_embeddings, set_of_true_clusters, embeddings_numbers = self.get_embeddings(cluster_count,vector_size,j)
 
-        set_of_predicted_clusters = cluster_embeddings(set_of_embeddings,set_of_true_clusters, algorithm)
+        set_of_predicted_clusters = cluster_embeddings(set_of_embeddings,set_of_true_clusters, algorithm, cluster_count,mr_list3 ,mr_list4 ,vector_size ,j)
 
         print("------------------>>>>>>>>>>> predicted results\n")
-        #print(set_of_predicted_clusters)
+        print(set_of_predicted_clusters)
 
         print("------------------>>>>>>>>>>> true clusters\n")
-        #print(set_of_true_clusters)
+        print(set_of_true_clusters)
 
         return checkpoint_names, set_of_predicted_clusters, set_of_true_clusters, embeddings_numbers
 
-    def test_network(self, cluster_count, mr_list):
+    def test_network(self, cluster_count,vector_size, mr_list,mr_list2, mr_list3, mr_list4 ,j):
         """
         Tests the network implementation with the validation data set and saves the result sets
         of the different metrics in analysis.
         """
-        # checkpoint_names, set_of_predicted_clusters, set_of_true_clusters, embeddings_numbers = self.get_clusters();
-        # network_name = self.name + '_' + self.val_data
-        # analyse_results(network_name, checkpoint_names, set_of_predicted_clusters, set_of_true_clusters,
-        #                 embeddings_numbers)
 
-        algorithm = ["Agglomerative_Hierachial_Clustering",
-                     "K_Means_Clustering",
-                     "DominantSets_Clustering"]
+        # algorithm = ["Agglomerative_Hierachial_Clustering"]
+        algorithm = ["K_Means_Clustering"]
 
-        for i in range(len(algorithm) - 1):
+        # algorithm = ["DominantSets_Clustering"]
+
+        for i in range(len(algorithm)):
 
             print("\n")
-            print(">>>>>>>>>>>>>>>>Executing " + algorithm[i] + "<<<<<<<<<<<<<<<<\n")
+            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Executing " + algorithm[i] + "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n")
 
             checkpoint_names, set_of_predicted_clusters, set_of_true_clusters, embeddings_numbers = self \
-                .get_clusters(cluster_count, algorithm[i])
+                .get_clusters(cluster_count, vector_size, algorithm[i], mr_list3 , mr_list4 ,j)
             network_name = self.name + '_' + self.val_data
-            analyse_results(network_name, checkpoint_names, set_of_predicted_clusters, set_of_true_clusters,
-                            embeddings_numbers, algorithm[i], cluster_count, mr_list)
+
+            if not algorithm[i] == "DominantSets_Clustering":
+
+                analyse_results(network_name, checkpoint_names, set_of_predicted_clusters, set_of_true_clusters,
+                            embeddings_numbers, algorithm[i], vector_size, j,  cluster_count, mr_list,mr_list2)
 

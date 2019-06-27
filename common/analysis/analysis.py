@@ -29,8 +29,13 @@ def plot_files(plot_file_name, files):
     print("Plot File Name")
     print(plot_file_name)
 
+    loaded_dict = load(get_experiment_results("lstm_overlap_cluster_timit_40_corpus_" + str(40) + "1"))
+    loaded_dict2 = load(get_experiment_results("lstm_overlap_cluster_timit_40_corpus_" + str(40) + "2"))
+    loaded_dict3 = load(get_experiment_results("lstm_overlap_cluster_timit_40_corpus_" + str(40) + "3"))
+
+
     plot_curves(plot_file_name, curve_names, set_of_mrs, set_of_homogeneity_scores, set_of_completeness_scores,
-                set_of_number_of_embeddings)
+                set_of_number_of_embeddings,loaded_dict,loaded_dict2,loaded_dict3)
 
 
 def read_result_pickle(files):
@@ -66,7 +71,7 @@ def read_result_pickle(files):
     return curve_names, set_of_mrs, set_of_homogeneity_scores, set_of_completeness_scores, set_of_number_of_embeddings
 
 
-def plot_curves(plot_file_name, curve_names, mrs, homogeneity_scores, completeness_scores, number_of_embeddings):
+def plot_curves(plot_file_name, curve_names, mrs, homogeneity_scores, completeness_scores, number_of_embeddings,loaded_dict,loaded_dict2,loaded_dict3):
     """
     Plots all specified curves and saves the plot into a file.
     :param plot_file_name: String value of save file name
@@ -81,10 +86,47 @@ def plot_curves(plot_file_name, curve_names, mrs, homogeneity_scores, completene
     logger.info(plot_file_name)
     min_mrs = []
     for mr in mrs:
-        print("............Appending........ ")
-        print(np.min(mr))
         min_mrs.append(np.min(mr))
-        print("\n")
+
+
+    num_clusters=[]
+    hierach_MR = []
+    kmeans_mr = []
+    ds_mr = []
+
+    for x in loaded_dict:
+        num_clusters.append(x)
+        hierach_MR.append(loaded_dict[x])
+        # print(str(loaded_dict[x]) + " appended to " + str(x))
+    print("\n")
+    print("Hierachial MR")
+    print(hierach_MR)
+
+    for x in loaded_dict2:
+        kmeans_mr.append(loaded_dict2[x])
+        # print(str(loaded_dict[x]) + " appended to " + str(x))
+    print("\n")
+    print("Kmeans MR")
+    print(kmeans_mr)
+
+    for x in loaded_dict3:
+        ds_mr.append(loaded_dict3[x])
+        # print(str(loaded_dict[x]) + " appended to " + str(x))
+    print("\n")
+    print("DS MR")
+    print(ds_mr)
+
+
+    ks = list(loaded_dict)
+    ks = list(map(int, ks))
+    print("\n")
+    print("Cluster Count")
+    print(ks)
+    print("Minimum Cluster : " + str(min(ks)))
+    print("Maximum CLuster : " + str(max(ks))+ "\n")
+
+    maxc = max(ks)
+    minc = min(ks)
 
     # x = zip(*sorted(zip(min_mrs, curve_names, mrs, homogeneity_scores, completeness_scores, number_of_embeddings)))
     #
@@ -99,8 +141,6 @@ def plot_curves(plot_file_name, curve_names, mrs, homogeneity_scores, completene
 
     # How many lines to plot
     number_of_lines = len(curve_names)
-    print("Number of Lines to plot " + str(number_of_lines))
-    print(curve_names)
 
     # Get various colors needed to plot
     color_map = plt.get_cmap('gist_rainbow')
@@ -115,26 +155,41 @@ def plot_curves(plot_file_name, curve_names, mrs, homogeneity_scores, completene
     mr_plot.set_ylabel('MR')
     mr_plot.set_xlabel('Number of clusters')
     plt.grid(True)
-    plt.ylim([-0.01, 1.1])
+    plt.axis([minc,maxc, -0.02,1.2])
+
+
+    # print(mrs)
+    #
+    #
+    # for i in range(1,len(mrs),2):
+    #     print(mrs[i])
+    #     print(mrs[i][0])
+    #     kmeans_mr.append(mrs[i][0])
+    #     print(str(mrs[i][0]) + " appended "
 
     completeness_scores_plot = add_cluster_subplot(fig1, 234, 'completeness_scores')
     homogeneity_scores_plot = add_cluster_subplot(fig1, 235, 'homogeneity_scores')
 
+    value = [hierach_MR , kmeans_mr, ds_mr]
     # Define curves and their values
-    curves = [[mr_plot, mrs],
-              [homogeneity_scores_plot, homogeneity_scores],
-              [completeness_scores_plot, completeness_scores]]
+    curves = [[mr_plot, value]]
+
+    algorithm = ["Agglomerative_Hierachial_Clustering",
+                 "K_Means_Clustering",
+                 "DominantSets_Clustering"]
+
 
     # Plot all curves
-    for index in range(number_of_lines):
-        label = curve_names[index] + '\n min MR: ' + str(min_mrs[index])
+    for index in range(3):
+        label = algorithm[index]
         color = colors[index]
-        number_of_clusters = np.arange(number_of_embeddings[index], 0, -1)
-        print("Clusters....")
-        print(number_of_clusters)
+        # number_of_clusters = np.arange(number_of_embeddings[index], 0, -1)
+
 
         for plot, value in curves:
-            plot.plot(number_of_clusters, value[index], color=color, label=label)
+            print(value[index])
+            plot.plot(ks,value[index], color=color, label=label)
+
 
     # Add legend and save the plot
     fig1.legend()
@@ -159,8 +214,8 @@ def add_cluster_subplot(fig, position, y_lable):
     return subplot
 
 
-def analyse_results(network_name, checkpoint_names, set_of_predicted_clusters, set_of_true_clusters, embedding_numbers,algorithm,
-                    cluster_count=None, mr_list=None ):
+def analyse_results(network_name, checkpoint_names, set_of_predicted_clusters, set_of_true_clusters, embedding_numbers,algorithm, vector, j,
+                    cluster_count=None, mr_list=None ,mr_list2=None):
     """
     Analyses each checkpoint with the values of set_of_predicted_clusters and set_of_true_clusters.
     After the analysis the result are stored in the Pickle network_name.pickle and the best Result
@@ -178,19 +233,34 @@ def analyse_results(network_name, checkpoint_names, set_of_predicted_clusters, s
     set_of_homogeneity_scores = []
     set_of_completeness_scores = []
 
-    print ("Analyzing Results for " + algorithm)
+    print("\nAnalyzing Results for " + algorithm+ "\n")
 
     print("Checkpoint Names")
     print(checkpoint_names)
+    print("\n")
+
+    # print("Set of predicted clusters in Analysis\n")
+    # print(set_of_predicted_clusters)
+    # print("\n")
+    #
+    # print("Set of true clusters in Analysis\n")
+    # print(set_of_true_clusters)
+    # print("\n")
 
     for index, predicted_clusters in enumerate(set_of_predicted_clusters):
         print(index)
+
         if checkpoint_names is not None:
             logger.info('Analysing checkpoint:' + checkpoint_names[index-1])
 
-        mrs, homogeneity_scores, completeness_scores = calculate_analysis_values(predicted_clusters,
-                                                                                 set_of_true_clusters[index-1],
-                                                                                 cluster_count, mr_list)
+        # print("Predicted clusters in Analysis\n")
+        # print(predicted_clusters)
+        # print("\n")
+
+        mrs, homogeneity_scores, completeness_scores, mr_list = calculate_analysis_values(predicted_clusters,
+                                                                                 set_of_true_clusters[index-1], algorithm ,vector,j ,
+                                                                             cluster_count, mr_list, mr_list2)
+
         set_of_mrs.append(mrs)
         set_of_homogeneity_scores.append(homogeneity_scores)
         set_of_completeness_scores.append(completeness_scores)
@@ -202,7 +272,7 @@ def analyse_results(network_name, checkpoint_names, set_of_predicted_clusters, s
     logger.info('Analysis done')
 
 
-def calculate_analysis_values(predicted_clusters, true_cluster, cluster_count=None, mr_list=None):
+def calculate_analysis_values(predicted_clusters, true_cluster, alorithm, vector,j , cluster_count=None, mr_list=None , mr_list2=None):
     """
     Calculates the analysis values out of the predicted_clusters.
 
@@ -229,14 +299,45 @@ def calculate_analysis_values(predicted_clusters, true_cluster, cluster_count=No
     # Loop over all possible clustering
     for i, predicted_cluster in enumerate(predicted_clusters):
         # Calculate different analysis's
-        mrs[i] = misclassification_rate(true_cluster, predicted_cluster)
+        # print(i)
+        # print("\n")
+        # print(predicted_cluster)
+
+        if alorithm == "K_Means_Clustering":
+
+            print("True Clusters")
+            print(true_cluster)
+            print("\n")
+            print("Predicted Clusters")
+            print(predicted_clusters)
+            print("\n")
+
+            mrs[i] = misclassification_rate(true_cluster, predicted_cluster)
+            print("...................MR value of K means................................\n")
+            print(mrs[i])
+            print("\n")
+            if cluster_count is not None:
+
+                temp = str(cluster_count) + "_" + str(vector) + "_" + str(j)
+                mr_list2[temp] = mrs[i]
+                print(str(mrs[i]) + " added to mr_list2\n")
+
+        if alorithm == "Agglomerative_Hierachial_Clustering":
+            mrs[i] = misclassification_rate(true_cluster, predicted_cluster)
+            print(mrs[i])
+
+            if cluster_count is not None and (max(predicted_cluster) == cluster_count):
+                temp = str(cluster_count) + "_" + str(vector) + "_" + str(j)
+                mr_list[temp] = mrs[i]
+                print("...................MR value of Hirechial Clustering................................\n")
+                print(mrs[i])
+                print("\n")
+                print(str(mrs[i]) + " added to mr_list\n")
+
         homogeneity_scores[i] = homogeneity_score(true_cluster, predicted_cluster)
         completeness_scores[i] = completeness_score(true_cluster, predicted_cluster)
 
-        if cluster_count is not None and (max(predicted_cluster) == cluster_count):
-            mr_list[str(cluster_count)] = mrs[i]
-
-    return mrs, homogeneity_scores, completeness_scores
+    return mrs, homogeneity_scores, completeness_scores ,mr_list
 
 
 def save_best_results(network_name, checkpoint_names, set_of_mrs, set_of_homogeneity_scores,

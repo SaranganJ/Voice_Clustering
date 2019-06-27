@@ -2,9 +2,10 @@ import pickle
 from networks.pairwise_lstm.lstm_controller import LSTMController
 from common.utils.paths import *
 from common.utils.pickler import load
+import controller
 
 
-lstmcontroller = LSTMController()
+lstmcontroller = LSTMController
 lstmcontroller.val_data = "speakers_all"
 cluster_range = 22
 mr_dict = {}
